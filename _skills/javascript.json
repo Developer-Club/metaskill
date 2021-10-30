@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "text": "Q1. Which operator returns true if the two compared values are not equal?",
+      "options": [
+        {
+          "text": "<>",
+          "correct": false
+        },
+        {
+          "text": "~",
+          "correct": false
+        },
+        {
+          "text": "==!",
+          "correct": false
+        },
+        {
+          "text": "!==",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "text": "Q2. How is a forEach statement different from a for statement?",
+      "options": [
+        {
+          "text": "Only a for statement uses a callback function.",
+          "correct": false
+        },
+        {
+          "text": "A for statement is generic, but a forEach statement can be used only with an array.",
+          "correct": true
+        },
+        {
+          "text": "Only a forEach statement lets you specify your own iterator.",
+          "correct": false
+        },
+        {
+          "text": "A forEach statement is generic, but a for statement can be used only with an array.",
+          "correct": false
+        }
+      ]
+    }
+  ]
+}
