@@ -114,7 +114,6 @@ const Home: NextPage = () => {
                       direction="column"
                       mt={4}
                       bg={"gray.800"}
-                      hover
                       h="40vh"
                       w="32vh"
                       _hover={{ bg: skill.hover }}
