@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, Dispatch, ChangeEvent, useState } from "react";
 import {
   Text,
   Stack,
@@ -20,6 +20,7 @@ type Question = {
 
 type QuestionProps = {
   question: Question;
+  syncChildState: Dispatch<any>
 };
 
 function isMultiple(options: Option[]) {
@@ -32,10 +33,24 @@ function isMultiple(options: Option[]) {
   return count > 1;
 }
 
-const Question: FC<QuestionProps> = ({ question }) => {
+const Question: FC<QuestionProps> = ({ question, syncChildState }) => {
   const { text, options } = question;
+  const initialState = prepareInitialState(options)[0];             // Formato dinamico para objeto inicial 
+  const [allCheckboxes, setAllCheckboxes] = useState(initialState); // Estado para sincronizar con el padre
+  const [radioSelect, setRadioSelect] = useState<any>("");
 
   const isMultipleSelection = isMultiple(options);
+
+  function change(checkboxKey: string, value: boolean | string) {
+    if (checkboxKey === "singleAnswer") {
+      setRadioSelect(value);
+      syncChildState({...allCheckboxes, [`checkbox${value}`]: true}); // data al padre
+      return;
+    }
+
+    setAllCheckboxes({...allCheckboxes, [checkboxKey]: !value});
+    syncChildState({...allCheckboxes, [checkboxKey]: !value}); // data al padre
+  }
 
   return (
     <div>
@@ -48,6 +63,8 @@ const Question: FC<QuestionProps> = ({ question }) => {
               name={`option.${i}`}
               value={option.text}
               cursor="pointer"
+              checked={allCheckboxes[`checkbox${i}`]}
+              onChange={() => change(`checkbox${i}`, allCheckboxes[`checkbox${i}`])}
             >
               {option.text}
             </Checkbox>
@@ -55,11 +72,15 @@ const Question: FC<QuestionProps> = ({ question }) => {
         </Stack>
       )}
       {!isMultipleSelection && (
-        <RadioGroup name="option">
+        <RadioGroup
+          name="option"
+          onChange={(newValue: string) => change("singleAnswer", newValue)}
+          value={radioSelect}
+        >
           <Stack spacing="5">
-            {options.map((option) => (
-              <Radio key={option.text} value={option.text} cursor="pointer">
-                {option.text}
+            {options.map((option, i) => (
+              <Radio key={i} value={i} cursor="pointer">
+                {option.text} {radioSelect}
               </Radio>
             ))}
           </Stack>
@@ -70,3 +91,15 @@ const Question: FC<QuestionProps> = ({ question }) => {
 };
 
 export default Question;
+
+function prepareInitialState(lista: { text: string; correct: boolean }[]): [Record<string, boolean>, { checkbox: string; correct: boolean }[]] {
+  const initialStateObject: Record<string, boolean> = {};
+  const listForRender: { checkbox: string; correct: boolean }[] = [];
+
+  for (let index = 0; index < lista.length; index++) {
+    initialStateObject[`checkbox${index}`] = false;
+    listForRender.push({ checkbox: `checkbox${index}`, correct: false });
+  }
+
+  return [initialStateObject, listForRender];
+}

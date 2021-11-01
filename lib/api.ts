@@ -13,3 +13,4 @@ export function getJsonBySlug(slug: string) {
 
   return JSON.parse(fileContents);
 }
+
