@@ -1,4 +1,4 @@
-import { FC, Dispatch, ChangeEvent, useState } from "react";
+import { FC, Dispatch, ChangeEvent, useState, useEffect } from "react";
 import {
   Text,
   Stack,
@@ -7,6 +7,7 @@ import {
   RadioGroup,
   Radio,
 } from "@chakra-ui/react";
+import { isMultiple, prepareInitialState } from "../utils/utils";
 
 type Option = {
   text: string;
@@ -23,29 +24,28 @@ type QuestionProps = {
   syncChildState: Dispatch<any>
 };
 
-function isMultiple(options: Option[]) {
-  let count = 0;
-
-  for (let i = 0; i < options.length; i++) {
-    if (options[i].correct) count++;
-  }
-
-  return count > 1;
-}
-
 const Question: FC<QuestionProps> = ({ question, syncChildState }) => {
   const { text, options } = question;
-  const initialState = prepareInitialState(options)[0];             // Formato dinamico para objeto inicial 
+  const isMultipleSelection = isMultiple(options);
+
+  const initialState = prepareInitialState(options, isMultipleSelection);             // Formato dinamico para objeto inicial 
   const [allCheckboxes, setAllCheckboxes] = useState(initialState); // Estado para sincronizar con el padre
   const [radioSelect, setRadioSelect] = useState<any>("");
-
-  const isMultipleSelection = isMultiple(options);
 
   function change(checkboxKey: string, value: boolean | string) {
     if (checkboxKey === "singleAnswer") {
       setRadioSelect(value);
-      syncChildState({...allCheckboxes, [`checkbox${value}`]: true}); // data al padre
-      return;
+      const newCheckbox: Record<string, boolean> = {}
+
+      for (const key in allCheckboxes) {
+        if (key === `checkbox${value}`) {
+          newCheckbox[key] = true;
+          continue
+        }
+        newCheckbox[key] = false;
+      }
+
+      return syncChildState(newCheckbox); // data al padre
     }
 
     setAllCheckboxes({...allCheckboxes, [checkboxKey]: !value});
@@ -75,6 +75,7 @@ const Question: FC<QuestionProps> = ({ question, syncChildState }) => {
         <RadioGroup
           name="option"
           onChange={(newValue: string) => change("singleAnswer", newValue)}
+          defaultValue={0}
           value={Number(radioSelect)}
         >
           <Stack spacing="5">
@@ -91,15 +92,3 @@ const Question: FC<QuestionProps> = ({ question, syncChildState }) => {
 };
 
 export default Question;
-
-function prepareInitialState(lista: { text: string; correct: boolean }[]): [Record<string, boolean>, { checkbox: string; correct: boolean }[]] {
-  const initialStateObject: Record<string, boolean> = {};
-  const listForRender: { checkbox: string; correct: boolean }[] = [];
-
-  for (let index = 0; index < lista.length; index++) {
-    initialStateObject[`checkbox${index}`] = false;
-    listForRender.push({ checkbox: `checkbox${index}`, correct: false });
-  }
-
-  return [initialStateObject, listForRender];
-}
