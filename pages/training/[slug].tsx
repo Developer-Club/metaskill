@@ -25,9 +25,8 @@ const TrainingPage: NextPage<Props> = (props) => {
   const { slug, data } = props;
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [questionsState, setQuestionsState] = useState<Record<string, any>>(prepareInitialState(data[index]?.options, isMultiple(data[index]?.options)));
-
   const isFinished = index === data.length;
+  const [questionsState, setQuestionsState] = useState<Record<string, any>>(prepareInitialState(data[index]?.options, isMultiple(data[index]?.options)));
 
   async function next() {
     setLoading(true);
