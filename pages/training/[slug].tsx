@@ -7,10 +7,15 @@ import Question from "components/Question";
 
 import { getJsonBySlug } from "lib/api";
 
+// helpers
+import { grade, isMultiple, prepareInitialState } from "../../utils/utils";
+
 type Props = {
   slug: string;
   data: any[];
 };
+
+const finalGrade = [] as any;
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -20,15 +25,18 @@ const TrainingPage: NextPage<Props> = (props) => {
   const { slug, data } = props;
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const isFinished = index === data.length;
+  const [questionsState, setQuestionsState] = useState<Record<string, any>>(prepareInitialState(data[index]?.options, isMultiple(data[index]?.options)));
 
   async function next() {
     setLoading(true);
+    finalGrade.push(questionsState);
     await delay(1000);
-    setIndex(index + 1);
+    if (!isFinished) {
+      setIndex(index + 1);
+    }
     setLoading(false);
   }
-
-  const isFinished = index === data.length;
 
   return (
     <Layout>
@@ -40,10 +48,18 @@ const TrainingPage: NextPage<Props> = (props) => {
 
         {!loading && !isFinished && (
           <Box w="80%" maxW="620px" bg="gray.900" minHeight="300px" p="5">
-            <Question question={data[index]} />
+            <Question
+              question={data[index]}
+              syncChildState={setQuestionsState}
+            />
           </Box>
         )}
+
+        <Text mx="10" fontSize="9xl">
+          {isFinished && ( grade(finalGrade, data) )}
+        </Text>
       </Flex>
+
       <Flex
         position="fixed"
         bottom="0"
