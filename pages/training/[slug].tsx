@@ -8,14 +8,14 @@ import Question from "components/Question";
 import { getJsonBySlug } from "lib/api";
 
 // helpers
-import { grade } from "../../utils/utils";
+import { grade, isMultiple, prepareInitialState } from "../../utils/utils";
 
 type Props = {
   slug: string;
   data: any[];
 };
 
-const acumulado = [] as any;
+const finalGrade = [] as any;
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,13 +25,13 @@ const TrainingPage: NextPage<Props> = (props) => {
   const { slug, data } = props;
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [questionsState, setQuestionsState] = useState<Record<string, any>>({});
+  const [questionsState, setQuestionsState] = useState<Record<string, any>>(prepareInitialState(data[index]?.options, isMultiple(data[index]?.options)));
 
   const isFinished = index === data.length;
 
   async function next() {
     setLoading(true);
-    acumulado.push(questionsState);
+    finalGrade.push(questionsState);
     await delay(1000);
     if (!isFinished) {
       setIndex(index + 1);
@@ -57,7 +57,7 @@ const TrainingPage: NextPage<Props> = (props) => {
         )}
 
         <Text mx="10" fontSize="9xl">
-          {isFinished && ( grade(acumulado, data) )}
+          {isFinished && ( grade(finalGrade, data) )}
         </Text>
       </Flex>
 
